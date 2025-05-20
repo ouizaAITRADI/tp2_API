@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const Album = require('../models/Album');
+const verifyToken = require('../middlewares/verifyToken');
 
-// Créer un nouvel album (POST /album)
-router.post('/album', async (req, res) => {
+// Créer un nouvel album (POST /album) — protégée
+router.post('/album', verifyToken, async (req, res) => {
   try {
     const album = new Album({
       title: req.body.title,
@@ -27,8 +28,8 @@ router.get('/album/:id', async (req, res) => {
   }
 });
 
-// Mettre à jour un album (PUT /album/:id)
-router.put('/album/:id', async (req, res) => {
+// Mettre à jour un album (PUT /album/:id) — protégée
+router.put('/album/:id', verifyToken, async (req, res) => {
   try {
     const album = await Album.findById(req.params.id);
     if (!album) return res.status(404).json({ message: "Album non trouvé" });
@@ -43,8 +44,8 @@ router.put('/album/:id', async (req, res) => {
   }
 });
 
-// Supprimer un album (DELETE /album/:id)
-router.delete('/album/:id', async (req, res) => {
+// Supprimer un album (DELETE /album/:id) — protégée
+router.delete('/album/:id', verifyToken, async (req, res) => {
   try {
     const album = await Album.findByIdAndDelete(req.params.id);
     if (!album) return res.status(404).json({ message: "Album non trouvé" });
@@ -59,7 +60,6 @@ router.get('/albums', async (req, res) => {
   try {
     const filter = {};
     if (req.query.title) {
-      // filtre insensible à la casse avec regex
       filter.title = { $regex: req.query.title, $options: 'i' };
     }
     const albums = await Album.find(filter).populate('photos');
